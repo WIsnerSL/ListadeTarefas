@@ -4,7 +4,13 @@ const cors = require('cors'); // Importa o CORS
 
 const app = express();
 
-app.use(cors()); // Habilita o CORS para todas as rotas
+// Configuração do CORS
+app.use(cors({
+    origin: 'http://seu-frontend.com', // Substitua pela URL do seu frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Restringe métodos permitidos
+    credentials: true // Habilita o envio de cookies, se necessário
+}));
+
 app.use(express.json()); // Para ler JSON no corpo das requisições
 console.log("Iniciando o servidor...");
 
@@ -111,5 +117,3 @@ app.listen(PORT, (err) => {
         console.log(`Servidor rodando em http://localhost:${PORT}`);
     }
 });
-
-/***  *** */
