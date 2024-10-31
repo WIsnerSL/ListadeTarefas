@@ -1,7 +1,10 @@
 const { Pool } = require('pg');
 const express = require('express');
+const cors = require('cors'); // Importa o CORS
+
 const app = express();
 
+app.use(cors()); // Habilita o CORS para todas as rotas
 app.use(express.json()); // Para ler JSON no corpo das requisições
 console.log("Iniciando o servidor...");
 
