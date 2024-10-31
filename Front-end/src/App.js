@@ -13,7 +13,7 @@ function App() {
 
   const fetchTarefas = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/tarefas');
+      const response = await axios.get('http://52.67.17.6:3000/api/tarefas');
       setTarefas(response.data);
     } catch (error) {
       console.error('Erro ao buscar tarefas:', error);
@@ -44,16 +44,16 @@ function App() {
 
     const tarefaData = {
       nome: novaTarefa.nome,
-      custo: parseFloat(novaTarefa.custo) || 0, // Converte para número ou usa 0
+      custo: parseFloat(novaTarefa.custo) || 0,
       data_limite: novaTarefa.data_limite,
     };
 
     try {
       if (editandoTarefa) {
-        await axios.put(`http://localhost:3000/api/tarefas/${editandoTarefa}`, tarefaData);
+        await axios.put(`http://52.67.17.6:3000/api/tarefas/${editandoTarefa}`, tarefaData);
         console.log("Tarefa editada com sucesso!");
       } else {
-        await axios.post('http://localhost:3000/api/tarefas', tarefaData);
+        await axios.post('http://52.67.17.6:3000/api/tarefas', tarefaData);
         console.log("Tarefa criada com sucesso!");
       }
       fetchTarefas();
@@ -74,7 +74,7 @@ function App() {
 
   const handleDeleteTarefa = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/tarefas/${id}`);
+      await axios.delete(`http://52.67.17.6:3000/api/tarefas/${id}`);
       fetchTarefas();
       console.log("Tarefa excluída com sucesso!");
     } catch (error) {
