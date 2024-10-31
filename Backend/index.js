@@ -110,6 +110,7 @@ app.post('/api/tarefas', async (req, res) => {
 });
 
 // Inicia o servidor e exibe a mensagem
+app.use(cors())
 app.listen(PORT, (err) => {
     if (err) {
         console.error("Erro ao iniciar o servidor:", err);
@@ -117,3 +118,6 @@ app.listen(PORT, (err) => {
         console.log(`Servidor rodando em http://localhost:${PORT}`);
     }
 });
+
+
+///
