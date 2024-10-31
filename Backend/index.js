@@ -1,14 +1,14 @@
 const { Pool } = require('pg');
 const express = require('express');
-const cors = require('cors'); // Importa o CORS
+const cors = require('cors');
 
 const app = express();
 
 // Configuração do CORS
 app.use(cors({
     origin: 'http://seu-frontend.com', // Substitua pela URL do seu frontend
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Restringe métodos permitidos
-    credentials: true // Habilita o envio de cookies, se necessário
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
 }));
 
 app.use(express.json()); // Para ler JSON no corpo das requisições
@@ -28,7 +28,7 @@ const pool = new Pool({
 // Rota para listar todas as tarefas, ordenadas por "ordem_apresentacao"
 app.get('/api/tarefas', async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, nome, custo, data_limite FROM tarefas ORDER BY ordem_apresentacao');
+        const result = await pool.query('SELECT id_tarefa, nome, custo, data_limite FROM tarefas ORDER BY ordem_apresentacao');
         res.status(200).json(result.rows);
     } catch (error) {
         console.error('Erro ao listar tarefas:', error);
@@ -37,10 +37,10 @@ app.get('/api/tarefas', async (req, res) => {
 });
 
 // Rota para excluir uma tarefa pelo ID
-app.delete('/api/tarefas/:id', async (req, res) => {
-    const { id } = req.params;
+app.delete('/api/tarefas/:id_tarefa', async (req, res) => {
+    const { id_tarefa } = req.params;
     try {
-        await pool.query('DELETE FROM tarefas WHERE id = $1', [id]);
+        await pool.query('DELETE FROM tarefas WHERE id_tarefa = $1', [id_tarefa]);
         res.status(200).json({ message: 'Tarefa excluída com sucesso!' });
     } catch (error) {
         console.error('Erro ao excluir tarefa:', error);
@@ -49,15 +49,15 @@ app.delete('/api/tarefas/:id', async (req, res) => {
 });
 
 // Rota para editar uma tarefa pelo ID
-app.put('/api/tarefas/:id', async (req, res) => {
-    const { id } = req.params;
+app.put('/api/tarefas/:id_tarefa', async (req, res) => {
+    const { id_tarefa } = req.params;
     const { nome, custo, data_limite } = req.body;
 
     try {
         // Verificar se o nome já existe (exceto para a tarefa atual)
         const nameCheck = await pool.query(
-            'SELECT 1 FROM tarefas WHERE nome = $1 AND id != $2',
-            [nome, id]
+            'SELECT 1 FROM tarefas WHERE nome = $1 AND id_tarefa != $2',
+            [nome, id_tarefa]
         );
 
         if (nameCheck.rows.length > 0) {
@@ -66,8 +66,8 @@ app.put('/api/tarefas/:id', async (req, res) => {
 
         // Atualizar a tarefa
         await pool.query(
-            'UPDATE tarefas SET nome = $1, custo = $2, data_limite = $3 WHERE id = $4',
-            [nome, custo, data_limite, id]
+            'UPDATE tarefas SET nome = $1, custo = $2, data_limite = $3 WHERE id_tarefa = $4',
+            [nome, custo, data_limite, id_tarefa]
         );
 
         res.status(200).json({ message: 'Tarefa atualizada com sucesso!' });
@@ -110,7 +110,6 @@ app.post('/api/tarefas', async (req, res) => {
 });
 
 // Inicia o servidor e exibe a mensagem
-app.use(cors())
 app.listen(PORT, (err) => {
     if (err) {
         console.error("Erro ao iniciar o servidor:", err);
@@ -118,6 +117,3 @@ app.listen(PORT, (err) => {
         console.log(`Servidor rodando em http://localhost:${PORT}`);
     }
 });
-
-
-///
