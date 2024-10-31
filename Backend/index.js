@@ -120,8 +120,3 @@ app.listen(PORT, (err) => {
         console.log(`Servidor rodando em http://localhost:${PORT}`);
     }
 });
-
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
-}));
