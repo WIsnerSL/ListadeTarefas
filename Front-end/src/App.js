@@ -61,7 +61,13 @@ function App() {
     } catch (error) {
       console.error('Erro ao adicionar/editar tarefa:', error);
       if (error.response) {
-        console.log("Erro de resposta do servidor:", error.response.data);
+        console.log('Erro de resposta do servidor:', error.response.data);
+        console.log('Status do erro:', error.response.status);
+        console.log('Headers do erro:', error.response.headers);
+      } else if (error.request) {
+        console.log('Erro na requisição:', error.request);
+      } else {
+        console.log('Erro desconhecido:', error.message);
       }
     }
   };

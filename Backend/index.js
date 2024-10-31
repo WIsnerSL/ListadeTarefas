@@ -6,10 +6,13 @@ const app = express();
 
 // Configuração do CORS
 app.use(cors({
-    origin: 'http://seu-frontend.com', // Substitua pela URL do seu frontend
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: '*', // Em produção, substitua por 'http://seu-frontend.com'
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
 }));
+
+// Middleware para lidar com requisições OPTIONS (preflight)
+app.options('*', cors());
 
 app.use(express.json()); // Para ler JSON no corpo das requisições
 console.log("Iniciando o servidor...");
