@@ -186,7 +186,6 @@ function App() {
                           ...provided.draggableProps.style,
                         }}
                       >
-                        {/* Botões Subir e Descer no canto superior direito */}
                         <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '5px' }}>
                           <button onClick={() => moveTaskUp(index)} disabled={index === 0} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#ffffff' }}>
                             <FaArrowUp />
@@ -200,22 +199,11 @@ function App() {
                         <p><strong>Custo:</strong> R${Number(tarefa.custo).toFixed(2)}</p>
                         <p><strong>Data Limite:</strong> {new Date(tarefa.data_limite).toLocaleDateString()}</p>
 
-                        {/* Botões Editar e Excluir alinhados à direita */}
-                        <div style={{
-                          position: 'absolute',
-                          bottom: '10px',
-                          right: '10px',
-                          display: 'flex',
-                          gap: '10px'
-                        }}>
-                          <button onClick={() => handleOpenModal(tarefa)} style={{
-                            padding: '5px 10px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
-                          }}>
+                        <div style={{ position: 'absolute', bottom: '10px', right: '10px', display: 'flex', gap: '10px' }}>
+                          <button onClick={() => handleOpenModal(tarefa)} style={{ padding: '5px 10px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px' }}>
                             <FaEdit /> Editar
                           </button>
-                          <button onClick={() => handleDeleteTarefa(tarefa)} style={{
-                            padding: '5px 10px', backgroundColor: '#ff4d4d', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
-                          }}>
+                          <button onClick={() => handleDeleteTarefa(tarefa)} style={{ padding: '5px 10px', backgroundColor: '#ff4d4d', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px' }}>
                             <FaTrash /> Excluir
                           </button>
                         </div>
@@ -250,61 +238,41 @@ function App() {
       </button>
 
       {isModalOpen && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center'
-        }}>
-          <div style={{
-            backgroundColor: '#ffffff', padding: '20px', borderRadius: '5px', width: '280px', color: '#000000'
-          }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '5px', width: '280px', color: '#000000' }}>
             <h2>{editandoTarefa ? "Editar Tarefa" : "Nova Tarefa"}</h2>
             <input
               type="text"
               placeholder="Nome da tarefa"
               value={novaTarefa.nome}
               onChange={(e) => setNovaTarefa({ ...novaTarefa, nome: e.target.value })}
-              style={{
-                padding: '10px',
-                width: '90%', 
-                marginBottom: '10px',
-                borderRadius: '5px',
-                border: '1px solid #ccc',
-              }}
+              style={{ padding: '10px', width: '90%', marginBottom: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
             />
             <input
               type="number"
               placeholder="Custo"
               value={novaTarefa.custo}
-              onChange={(e) => setNovaTarefa({ ...novaTarefa, custo: e.target.value })}
-              style={{
-                padding: '10px',
-                width: '90%', 
-                marginBottom: '10px',
-                borderRadius: '5px',
-                border: '1px solid #ccc',
+              onChange={(e) => {
+                const value = e.target.value;
+                if (parseFloat(value) >= 0 || value === "") { // Validação para valores não-negativos
+                  setNovaTarefa({ ...novaTarefa, custo: value });
+                } else {
+                  alert("O valor do custo não pode ser negativo.");
+                }
               }}
+              style={{ padding: '10px', width: '90%', marginBottom: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
             />
             <input
               type="date"
               placeholder="Data Limite"
               value={novaTarefa.data_limite}
               onChange={(e) => setNovaTarefa({ ...novaTarefa, data_limite: e.target.value })}
-              style={{
-                padding: '10px',
-                width: '90%', 
-                marginBottom: '20px',
-                borderRadius: '5px',
-                border: '1px solid #ccc',
-              }}
+              style={{ padding: '10px', width: '90%', marginBottom: '20px', borderRadius: '5px', border: '1px solid #ccc' }}
             />
-            <button onClick={handleAddOrEditTarefa} style={{
-              padding: '10px 20px', marginRight: '10px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
-            }}>
+            <button onClick={handleAddOrEditTarefa} style={{ padding: '10px 20px', marginRight: '10px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px' }}>
               Salvar
             </button>
-            <button onClick={handleCloseModal} style={{
-              padding: '10px 20px', backgroundColor: '#ff4d4d', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
-            }}>
+            <button onClick={handleCloseModal} style={{ padding: '10px 20px', backgroundColor: '#ff4d4d', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px' }}>
               Cancelar
             </button>
           </div>
@@ -312,23 +280,14 @@ function App() {
       )}
 
       {isDeleteConfirmOpen && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center'
-        }}>
-          <div style={{
-            backgroundColor: '#ffffff', padding: '20px', borderRadius: '5px', width: '280px', color: '#000000', textAlign: 'center'
-          }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '5px', width: '280px', color: '#000000', textAlign: 'center' }}>
             <h2>Confirmar Exclusão</h2>
             <p>Tem certeza de que deseja excluir esta tarefa?</p>
-            <button onClick={confirmDeleteTarefa} style={{
-              padding: '10px 20px', marginRight: '10px', backgroundColor: '#ff4d4d', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
-            }}>
+            <button onClick={confirmDeleteTarefa} style={{ padding: '10px 20px', marginRight: '10px', backgroundColor: '#ff4d4d', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px' }}>
               Sim
             </button>
-            <button onClick={cancelDeleteTarefa} style={{
-              padding: '10px 20px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
-            }}>
+            <button onClick={cancelDeleteTarefa} style={{ padding: '10px 20px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px' }}>
               Não
             </button>
           </div>
