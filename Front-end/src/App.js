@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 function App() {
   const [tarefas, setTarefas] = useState([]);
@@ -60,15 +61,6 @@ function App() {
       handleCloseModal();
     } catch (error) {
       console.error('Erro ao adicionar/editar tarefa:', error);
-      if (error.response) {
-        console.log('Erro de resposta do servidor:', error.response.data);
-        console.log('Status do erro:', error.response.status);
-        console.log('Headers do erro:', error.response.headers);
-      } else if (error.request) {
-        console.log('Erro na requisição:', error.request);
-      } else {
-        console.log('Erro desconhecido:', error.message);
-      }
     }
   };
 
@@ -82,8 +74,18 @@ function App() {
     }
   };
 
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const reorderedTarefas = Array.from(tarefas);
+    const [movedTask] = reorderedTarefas.splice(result.source.index, 1);
+    reorderedTarefas.splice(result.destination.index, 0, movedTask);
+
+    setTarefas(reorderedTarefas);
+  };
+
   return (
-    <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#1d1d1d', height: '100vh', color: '#ffffff' }}>
+    <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#1d1d1d', minHeight: '100vh', color: '#ffffff' }}>
       <h1 style={{ color: '#ffffff' }}>Tarefas</h1>
       <button
         onClick={() => handleOpenModal()}
@@ -107,7 +109,7 @@ function App() {
           backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center'
         }}>
           <div style={{
-            backgroundColor: '#ffffff', padding: '20px', borderRadius: '5px', width: '300px', color: '#000000'
+            backgroundColor: '#ffffff', padding: '20px', borderRadius: '5px', width: '280px', color: '#000000'
           }}>
             <h2>{editandoTarefa ? "Editar Tarefa" : "Nova Tarefa"}</h2>
             <input
@@ -115,29 +117,47 @@ function App() {
               placeholder="Nome da tarefa"
               value={novaTarefa.nome}
               onChange={(e) => setNovaTarefa({ ...novaTarefa, nome: e.target.value })}
-              style={{ padding: '10px', width: '100%', marginBottom: '10px' }}
+              style={{
+                padding: '10px',
+                width: '90%', 
+                marginBottom: '10px',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+              }}
             />
             <input
               type="number"
               placeholder="Custo"
               value={novaTarefa.custo}
               onChange={(e) => setNovaTarefa({ ...novaTarefa, custo: e.target.value })}
-              style={{ padding: '10px', width: '100%', marginBottom: '10px' }}
+              style={{
+                padding: '10px',
+                width: '90%', 
+                marginBottom: '10px',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+              }}
             />
             <input
               type="date"
               placeholder="Data Limite"
               value={novaTarefa.data_limite}
               onChange={(e) => setNovaTarefa({ ...novaTarefa, data_limite: e.target.value })}
-              style={{ padding: '10px', width: '100%', marginBottom: '10px' }}
+              style={{
+                padding: '10px',
+                width: '90%', 
+                marginBottom: '20px',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+              }}
             />
             <button onClick={handleAddOrEditTarefa} style={{
-              padding: '10px 20px', marginRight: '10px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer'
+              padding: '10px 20px', marginRight: '10px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
             }}>
               Salvar
             </button>
             <button onClick={handleCloseModal} style={{
-              padding: '10px 20px', backgroundColor: '#ff4d4d', color: '#ffffff', border: 'none', cursor: 'pointer'
+              padding: '10px 20px', backgroundColor: '#ff4d4d', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
             }}>
               Cancelar
             </button>
@@ -145,35 +165,60 @@ function App() {
         </div>
       )}
 
-      <div style={{ maxWidth: '300px', margin: '0 auto' }}>
-        {tarefas.map((tarefa) => (
-          <div
-            key={tarefa.id}
-            style={{
-              backgroundColor: '#3a3a3a',
-              padding: '15px',
-              borderRadius: '5px',
-              marginBottom: '10px',
-              color: '#ffffff',
-              textAlign: 'left'
-            }}
-          >
-            <h3>{tarefa.nome}</h3>
-            <p><strong>Custo:</strong> R${Number(tarefa.custo).toFixed(2)}</p>
-            <p><strong>Data Limite:</strong> {new Date(tarefa.data_limite).toLocaleDateString()}</p>
-            <button onClick={() => handleOpenModal(tarefa)} style={{
-              marginRight: '10px', padding: '5px 10px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer'
-            }}>
-              Editar
-            </button>
-            <button onClick={() => handleDeleteTarefa(tarefa.id)} style={{
-              padding: '5px 10px', backgroundColor: '#ff4d4d', color: '#ffffff', border: 'none', cursor: 'pointer'
-            }}>
-              Excluir
-            </button>
-          </div>
-        ))}
-      </div>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="tarefas">
+          {(provided) => (
+            <div
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              {tarefas.map((tarefa, index) => (
+                <Draggable key={tarefa.id} draggableId={tarefa.id.toString()} index={index}>
+                  {(provided) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      style={{
+                        backgroundColor: '#3a3a3a',
+                        padding: '15px',
+                        borderRadius: '5px',
+                        width: '80%',
+                        maxWidth: '400px',
+                        color: '#ffffff',
+                        textAlign: 'left',
+                        border: tarefa.custo >= 1000 ? '2px solid red' : 'none',
+                        ...provided.draggableProps.style,
+                      }}
+                    >
+                      <h3>{tarefa.nome}</h3>
+                      <p><strong>Custo:</strong> R${Number(tarefa.custo).toFixed(2)}</p>
+                      <p><strong>Data Limite:</strong> {new Date(tarefa.data_limite).toLocaleDateString()}</p>
+                      <button onClick={() => handleOpenModal(tarefa)} style={{
+                        marginRight: '10px', padding: '5px 10px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
+                      }}>
+                        Editar
+                      </button>
+                      <button onClick={() => handleDeleteTarefa(tarefa.id)} style={{
+                        padding: '5px 10px', backgroundColor: '#ff4d4d', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
+                      }}>
+                        Excluir
+                      </button>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   );
 }
