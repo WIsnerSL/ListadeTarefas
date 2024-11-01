@@ -17,7 +17,7 @@ function App() {
 
   const fetchTarefas = async () => {
     try {
-      const response = await axios.get('http://52.67.17.6:3000/api/tarefas');
+      const response = await axios.get('http://localhost:3000/api/tarefas');
       const sortedTasks = response.data.sort((a, b) => a.ordem_apresentacao - b.ordem_apresentacao);
       setTarefas(sortedTasks);
     } catch (error) {
@@ -59,10 +59,10 @@ function App() {
 
     try {
       if (editandoTarefa) {
-        await axios.put(`http://52.67.17.6:3000/api/tarefas/${editandoTarefa}`, tarefaData);
+        await axios.put(`http://localhost:3000/api/tarefas/${editandoTarefa}`, tarefaData);
         console.log("Tarefa editada com sucesso!");
       } else {
-        await axios.post('http://52.67.17.6:3000/api/tarefas', tarefaData);
+        await axios.post('http://localhost:3000/api/tarefas', tarefaData);
         console.log("Tarefa criada com sucesso!");
       }
       fetchTarefas();
@@ -79,7 +79,8 @@ function App() {
 
   const confirmDeleteTarefa = async () => {
     try {
-      await axios.delete(`http://52.67.17.6:3000/api/tarefas/${tarefaToDelete.id}`);
+      await axios.delete(`http://localhost:3000/api/tarefas/${tarefaToDelete.id}`);
+
       fetchTarefas();
       console.log("Tarefa excluída com sucesso!");
       setIsDeleteConfirmOpen(false);
@@ -108,7 +109,7 @@ function App() {
     setTarefas(reorderedTarefas);
 
     try {
-      await axios.put('http://52.67.17.6:3000/api/tarefas/atualizar-ordem', updatedTasks);
+      await axios.put('http://localhost:3000/api/tarefas/atualizar-ordem', updatedTasks);
       console.log('Ordem das tarefas atualizada com sucesso!');
     } catch (error) {
       console.error('Erro ao atualizar a ordem das tarefas:', error.response ? error.response.data : error.message);
@@ -141,7 +142,7 @@ function App() {
     setTarefas(reorderedTarefas);
 
     try {
-      await axios.put('http://52.67.17.6:3000/api/tarefas/atualizar-ordem', updatedTasks);
+      await axios.put('http://localhost:3000/api/tarefas/atualizar-ordem', updatedTasks);
       console.log('Ordem das tarefas atualizada com sucesso!');
     } catch (error) {
       console.error('Erro ao atualizar a ordem das tarefas:', error.response ? error.response.data : error.message);
@@ -338,4 +339,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; 

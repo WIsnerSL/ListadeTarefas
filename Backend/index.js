@@ -26,6 +26,9 @@ const pool = new Pool({
     port: 5432,
 });
 
+// Função para checar se um valor é um número inteiro válido
+const isValidInteger = (value) => Number.isInteger(value);
+
 // Endpoint para listar todas as tarefas
 app.get('/api/tarefas', async (req, res) => {
     try {
@@ -41,6 +44,10 @@ app.get('/api/tarefas', async (req, res) => {
 app.post('/api/tarefas', async (req, res) => {
     const { nome, custo, data_limite } = req.body;
 
+    if (!nome || isNaN(custo) || !data_limite) {
+        return res.status(400).json({ message: 'Nome, custo e data_limite são obrigatórios e devem ser válidos.' });
+    }
+
     try {
         // Verifica se o nome já existe
         const nameCheck = await pool.query('SELECT 1 FROM tarefas WHERE nome = $1', [nome]);
@@ -54,7 +61,7 @@ app.post('/api/tarefas', async (req, res) => {
 
         await pool.query(
             'INSERT INTO tarefas (nome, custo, data_limite, ordem_apresentacao) VALUES ($1, $2, $3, $4)', 
-            [nome, custo, data_limite, ordem_apresentacao]
+            [nome, parseFloat(custo), data_limite, ordem_apresentacao]
         );
 
         res.status(201).json({ message: 'Tarefa criada com sucesso!' });
@@ -64,33 +71,15 @@ app.post('/api/tarefas', async (req, res) => {
     }
 });
 
-// Endpoint para editar uma tarefa existente
-app.put('/api/tarefas/:id', async (req, res) => {
-    const { id } = req.params;
-    const { nome, custo, data_limite } = req.body;
 
-    try {
-        // Verifica se o novo nome da tarefa já existe para outra tarefa
-        const nameCheck = await pool.query('SELECT 1 FROM tarefas WHERE nome = $1 AND id != $2', [nome, id]);
-        if (nameCheck.rows.length > 0) {
-            return res.status(400).json({ message: 'O nome da tarefa já existe.' });
-        }
-
-        await pool.query(
-            'UPDATE tarefas SET nome = $1, custo = $2, data_limite = $3 WHERE id = $4',
-            [nome, custo, data_limite, id]
-        );
-
-        res.status(200).json({ message: 'Tarefa atualizada com sucesso!' });
-    } catch (error) {
-        console.error('Erro ao editar tarefa:', error);
-        res.status(500).json({ message: 'Erro ao editar tarefa', error: error.message });
-    }
-});
 
 // Endpoint para excluir uma tarefa pelo ID
 app.delete('/api/tarefas/:id', async (req, res) => {
     const { id } = req.params;
+
+    if (!isValidInteger(Number(id))) {
+        return res.status(400).json({ message: 'ID inválido.' });
+    }
 
     try {
         await pool.query('DELETE FROM tarefas WHERE id = $1', [id]);
@@ -101,20 +90,22 @@ app.delete('/api/tarefas/:id', async (req, res) => {
     }
 });
 
-// Rota para atualizar a ordem de apresentação de várias tarefas
+// Endpoint para atualizar a ordem de apresentação de várias tarefas
 app.put('/api/tarefas/atualizar-ordem', async (req, res) => {
     const tarefasOrdem = req.body;
 
     try {
-        await pool.query('BEGIN');
+        // Inicia a transação com isolamento SERIALIZABLE
+        await pool.query('BEGIN ISOLATION LEVEL SERIALIZABLE');
 
         for (const tarefa of tarefasOrdem) {
+            // Converte para inteiros explicitamente e valida apenas os campos relevantes
             const id = parseInt(tarefa.id, 10);
             const ordem_apresentacao = parseInt(tarefa.ordem_apresentacao, 10);
 
-            // Verifica se os valores são inteiros válidos
-            if (!Number.isInteger(id) || !Number.isInteger(ordem_apresentacao)) {
-                throw new Error(`ID ou ordem_apresentacao inválido: id=${id}, ordem_apresentacao=${ordem_apresentacao}`);
+            if (isNaN(id) || isNaN(ordem_apresentacao)) {
+                await pool.query('ROLLBACK');
+                return res.status(400).json({ message: 'ID e ordem_apresentacao são obrigatórios e devem ser válidos.' });
             }
 
             await pool.query(
@@ -123,6 +114,7 @@ app.put('/api/tarefas/atualizar-ordem', async (req, res) => {
             );
         }
 
+        // Confirma a transação
         await pool.query('COMMIT');
         res.status(200).json({ message: 'Ordem das tarefas atualizada com sucesso!' });
     } catch (error) {
@@ -132,6 +124,35 @@ app.put('/api/tarefas/atualizar-ordem', async (req, res) => {
     }
 });
 
+// Endpoint para editar uma tarefa existente
+app.put('/api/tarefas/:id', async (req, res) => {
+    const { id } = req.params;
+    const { nome, custo, data_limite } = req.body;
+
+    // Verifica se todos os campos necessários estão presentes
+    if (!nome || custo === undefined || !data_limite) {
+        return res.status(400).json({ message: 'Nome, custo e data_limite são obrigatórios.' });
+    }
+
+    try {
+        // Atualiza a tarefa no banco de dados
+        const result = await pool.query(
+            'UPDATE tarefas SET nome = $1, custo = $2, data_limite = $3 WHERE id = $4 RETURNING *',
+            [nome, parseFloat(custo), data_limite, id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Tarefa não encontrada.' });
+        }
+
+        res.status(200).json({ message: 'Tarefa atualizada com sucesso!', tarefa: result.rows[0] });
+    } catch (error) {
+        console.error('Erro ao editar tarefa:', error);
+        res.status(500).json({ message: 'Erro ao editar tarefa', error: error.message });
+    }
+});
+
+
 // Inicia o servidor
 app.listen(PORT, (err) => {
     if (err) {
@@ -139,4 +160,4 @@ app.listen(PORT, (err) => {
     } else {
         console.log(`Servidor rodando em http://localhost:${PORT}`);
     }
-});
+}); 
