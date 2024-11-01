@@ -18,7 +18,7 @@ function App() {
       const response = await axios.get('http://52.67.17.6:3000/api/tarefas');
       setTarefas(response.data);
     } catch (error) {
-      console.error('Erro ao buscar tarefas:', error);
+      console.error('Erro ao buscar tarefas:', error.response ? error.response.data : error.message);
     }
   };
 
@@ -61,7 +61,7 @@ function App() {
       fetchTarefas();
       handleCloseModal();
     } catch (error) {
-      console.error('Erro ao adicionar/editar tarefa:', error);
+      console.error('Erro ao adicionar/editar tarefa:', error.response ? error.response.data : error.message);
     }
   };
 
@@ -71,7 +71,7 @@ function App() {
       fetchTarefas();
       console.log("Tarefa excluída com sucesso!");
     } catch (error) {
-      console.error('Erro ao excluir tarefa:', error);
+      console.error('Erro ao excluir tarefa:', error.response ? error.response.data : error.message);
     }
   };
 
@@ -224,4 +224,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; 
