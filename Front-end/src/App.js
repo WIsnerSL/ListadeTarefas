@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 function App() {
   const [tarefas, setTarefas] = useState([]);
@@ -203,12 +204,12 @@ function App() {
                       <button onClick={() => handleOpenModal(tarefa)} style={{
                         marginRight: '10px', padding: '5px 10px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
                       }}>
-                        Editar
+                        <FaEdit /> Editar
                       </button>
                       <button onClick={() => handleDeleteTarefa(tarefa.id)} style={{
                         padding: '5px 10px', backgroundColor: '#ff4d4d', color: '#ffffff', border: 'none', cursor: 'pointer', borderRadius: '5px'
                       }}>
-                        Excluir
+                        <FaTrash /> Excluir
                       </button>
                     </div>
                   )}
