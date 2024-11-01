@@ -101,23 +101,20 @@ app.delete('/api/tarefas/:id', async (req, res) => {
     }
 });
 
-// Endpoint para atualizar a ordem de apresentação de várias tarefas com isolamento de transação
+// Rota para atualizar a ordem de apresentação de várias tarefas
 app.put('/api/tarefas/atualizar-ordem', async (req, res) => {
     const tarefasOrdem = req.body;
 
     try {
-        // Inicia a transação com isolamento SERIALIZABLE
-        await pool.query('BEGIN ISOLATION LEVEL SERIALIZABLE');
+        await pool.query('BEGIN');
 
         for (const tarefa of tarefasOrdem) {
-            // Converta para inteiros explicitamente
             const id = parseInt(tarefa.id, 10);
             const ordem_apresentacao = parseInt(tarefa.ordem_apresentacao, 10);
 
-            // Verifica se a conversão para inteiro falhou
-            if (isNaN(id) || isNaN(ordem_apresentacao)) {
-                await pool.query('ROLLBACK');
-                return res.status(400).json({ message: `Valores inválidos para ID ou ordem_apresentacao: id=${tarefa.id}, ordem_apresentacao=${tarefa.ordem_apresentacao}` });
+            // Verifica se os valores são inteiros válidos
+            if (!Number.isInteger(id) || !Number.isInteger(ordem_apresentacao)) {
+                throw new Error(`ID ou ordem_apresentacao inválido: id=${id}, ordem_apresentacao=${ordem_apresentacao}`);
             }
 
             await pool.query(
@@ -126,7 +123,6 @@ app.put('/api/tarefas/atualizar-ordem', async (req, res) => {
             );
         }
 
-        // Confirma a transação
         await pool.query('COMMIT');
         res.status(200).json({ message: 'Ordem das tarefas atualizada com sucesso!' });
     } catch (error) {
